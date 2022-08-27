@@ -1,9 +1,15 @@
 import click
 from apiflask import APIFlask
+from flask import request
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
 from src.api.v1.auth import auth_route
 from src.api.v1.roles import roles_route
@@ -58,6 +64,27 @@ def create_app(config_path):
 
 app = create_app('src/core/config.py')
 
+@app.before_request
+def before_request():
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        raise RuntimeError('request id is required')
+
+def configure_tracer() -> None:
+    trace.set_tracer_provider(TracerProvider())
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(
+            JaegerExporter(
+                agent_host_name='localhost',
+                agent_port=6831,
+            )
+        )
+    )
+    # Чтобы видеть трейсы в консоли
+    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
+configure_tracer()
+FlaskInstrumentor().instrument_app(app)
 
 @app.cli.command("create-superuser")
 @click.argument("email")
