@@ -11,6 +11,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from src.api.v1.auth import auth_route
 from src.api.v1.roles import roles_route
@@ -31,6 +32,7 @@ def create_app(config_path):
     app.config.from_pyfile(config_path)
 
     init_db(app)
+    SQLAlchemyInstrumentor().instrument(engine=db.engine)
     jwt = JWTManager(app)
 
     # from src.db.pg_db import db
