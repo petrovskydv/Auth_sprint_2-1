@@ -30,10 +30,14 @@ class PostgresSettings(MainSettings):
     postgres_host: str = Field(..., env='POSTGRES_HOST')
     postgres_port: int = Field(..., env='POSTGRES_PORT')
 
+class JaegerSettings(MainSettings):
+    agent_host: str = Field(..., env='JAEGER_HOST')
+    agent_port: int = Field(..., env='JAEGER_AGENT_PORT')
 
 redis_settings = RedisSettings()
 pg_settings = PostgresSettings()
 api_settings = ApiSettings()
+jaeger_settings = JaegerSettings()
 
 # Flask Configuration
 SECRET_KEY = api_settings.secret_key

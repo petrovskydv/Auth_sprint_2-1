@@ -1,4 +1,5 @@
 import click
+import logging
 from apiflask import APIFlask
 from flask import request
 from flask_jwt_extended import JWTManager
@@ -14,12 +15,15 @@ from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from src.api.v1.auth import auth_route
 from src.api.v1.roles import roles_route
 from src.api.v1.users import users_route
-from src.core.config import api_settings
+from src.core.config import api_settings, jaeger_settings
 from src.db.pg_db import init_db, db
 from src.db.redis_db import redis_service
 from src.models.models import User, Role
 from src.services.role import create_role_in_db, get_role_by_name
 from src.services.user import create_user_in_db, add_role_to_user, get_user
+
+
+logger = logging.getLogger()
 
 
 def create_app(config_path):
@@ -67,6 +71,7 @@ app = create_app('src/core/config.py')
 @app.before_request
 def before_request():
     request_id = request.headers.get('X-Request-Id')
+    logger.warning(request_id)
     if not request_id:
         raise RuntimeError('request id is required')
 
@@ -75,8 +80,8 @@ def configure_tracer() -> None:
     trace.get_tracer_provider().add_span_processor(
         BatchSpanProcessor(
             JaegerExporter(
-                agent_host_name='localhost',
-                agent_port=6831,
+                agent_host_name=jaeger_settings.agent_host,
+                agent_port=jaeger_settings.agent_port,
             )
         )
     )
