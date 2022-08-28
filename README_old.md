@@ -13,7 +13,7 @@
 # Проведение миграций
 Чтобы провести миграции, следует зайти в контейнер с API и запустить миграции через командную строку Flask
 ```
-docker exec -it auth_sprint_1_auth_api_1 bash
+docker exec -it auth_sprint_2_auth_api_1 bash
 python3 -m flask db upgrade
 ```
 # Создание суперпользователя

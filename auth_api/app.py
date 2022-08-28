@@ -1,9 +1,12 @@
 import click
 from apiflask import APIFlask
+from flask import request
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from src.api.v1.auth import auth_route
 from src.api.v1.roles import roles_route
@@ -14,6 +17,7 @@ from src.db.redis_db import redis_service
 from src.models.models import User, Role
 from src.services.role import create_role_in_db, get_role_by_name
 from src.services.user import create_user_in_db, add_role_to_user, get_user
+from src.core.tracers import configure_tracer
 
 
 def create_app(config_path):
@@ -21,6 +25,7 @@ def create_app(config_path):
     app.config.from_pyfile(config_path)
 
     init_db(app)
+    SQLAlchemyInstrumentor().instrument(engine=db.engine)
     jwt = JWTManager(app)
 
     # from src.db.pg_db import db
@@ -57,6 +62,18 @@ def create_app(config_path):
 
 
 app = create_app('src/core/config.py')
+
+
+@app.before_request
+def before_request():
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        raise RuntimeError('request id is required')
+
+
+# Конфигурируем и добавляем трейсер
+configure_tracer()
+FlaskInstrumentor().instrument_app(app)
 
 
 @app.cli.command("create-superuser")
