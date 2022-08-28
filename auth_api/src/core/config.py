@@ -30,9 +30,12 @@ class PostgresSettings(MainSettings):
     postgres_host: str = Field(..., env='POSTGRES_HOST')
     postgres_port: int = Field(..., env='POSTGRES_PORT')
 
+
 class JaegerSettings(MainSettings):
     agent_host: str = Field(..., env='JAEGER_HOST')
     agent_port: int = Field(..., env='JAEGER_AGENT_PORT')
+    sampling_ratio: float = Field(..., env='JAEGER_SAMPLING_RATIO')
+
 
 redis_settings = RedisSettings()
 pg_settings = PostgresSettings()

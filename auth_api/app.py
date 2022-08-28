@@ -1,30 +1,23 @@
 import click
-import logging
 from apiflask import APIFlask
 from flask import request
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from src.api.v1.auth import auth_route
 from src.api.v1.roles import roles_route
 from src.api.v1.users import users_route
-from src.core.config import api_settings, jaeger_settings
+from src.core.config import api_settings
 from src.db.pg_db import init_db, db
 from src.db.redis_db import redis_service
 from src.models.models import User, Role
 from src.services.role import create_role_in_db, get_role_by_name
 from src.services.user import create_user_in_db, add_role_to_user, get_user
-
-
-logger = logging.getLogger()
+from src.core.tracers import configure_tracer
 
 
 def create_app(config_path):
@@ -70,28 +63,18 @@ def create_app(config_path):
 
 app = create_app('src/core/config.py')
 
+
 @app.before_request
 def before_request():
     request_id = request.headers.get('X-Request-Id')
-    logger.warning(request_id)
     if not request_id:
         raise RuntimeError('request id is required')
 
-def configure_tracer() -> None:
-    trace.set_tracer_provider(TracerProvider())
-    trace.get_tracer_provider().add_span_processor(
-        BatchSpanProcessor(
-            JaegerExporter(
-                agent_host_name=jaeger_settings.agent_host,
-                agent_port=jaeger_settings.agent_port,
-            )
-        )
-    )
-    # Чтобы видеть трейсы в консоли
-    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
 
+# Конфигурируем и добавляем трейсер
 configure_tracer()
 FlaskInstrumentor().instrument_app(app)
+
 
 @app.cli.command("create-superuser")
 @click.argument("email")
