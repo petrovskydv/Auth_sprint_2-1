@@ -1,4 +1,26 @@
 import datetime as dt
+from user_agents import parse
+from enum import Enum
+
+
+class UserDeviceType(Enum):
+    WEB = 'Браузер'
+    MOBILE = 'Телефон'
+    SMART = 'Смарт-ТВ'
+
+
+def useragent_device_parser(useragent: str) -> UserDeviceType | None:
+    """Считывает устройство из строки Юзер-Агента"""
+    user_agent = parse(useragent)
+    # Парсим устройства
+    if str(user_agent).find("TV") != -1:
+        return UserDeviceType.SMART
+    if user_agent.is_mobile or user_agent.is_tablet:
+        return UserDeviceType.MOBILE
+    if user_agent.is_pc:
+        return UserDeviceType.WEB
+
+    return UserDeviceType.WEB
 
 
 def get_unix_timedelta(unix_time: str | dt.datetime | int):

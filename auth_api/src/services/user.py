@@ -2,6 +2,7 @@ from datetime import datetime
 
 from src.db.pg_db import db
 from src.models.models import User, AuthHistory
+from src.core.utils import useragent_device_parser
 
 
 def create_user_in_db(**kwargs):
@@ -31,6 +32,8 @@ def update_history(user_agent, user_id):
     if not history:
         history = AuthHistory(user_id=user_id, user_agent=user_agent)
     history.updated_at = datetime.utcnow()
+    ua = useragent_device_parser(user_agent)
+    history.user_device_type = ua
     db.session.add(history)
     db.session.commit()
 
