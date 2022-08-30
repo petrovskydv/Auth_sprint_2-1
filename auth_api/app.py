@@ -22,7 +22,6 @@ from src.core.tracers import configure_tracer
 from src.core.limiters import limiter
 
 
-
 def create_app(config_path):
     app = APIFlask(__name__, docs_path='/')
     app.config.from_pyfile(config_path)
@@ -56,7 +55,6 @@ def create_app(config_path):
         user = get_user(id=identity)
         return user
 
-
     limiter.init_app(app)
 
     api_v1 = '/auth/api/v1'
@@ -66,17 +64,16 @@ def create_app(config_path):
 
     return app
 
+
 # Подключаем конфиги
 app = create_app('src/core/config.py')
 
 
-
-# TODO Вернуть обратно
-# @app.before_request
-# def before_request():
-#     request_id = request.headers.get('X-Request-Id')
-#     if not request_id:
-#         raise RuntimeError('request id is required')
+@app.before_request
+def before_request():
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        raise RuntimeError('request id is required')
 
 
 # Конфигурируем и добавляем трейсер

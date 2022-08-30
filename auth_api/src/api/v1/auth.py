@@ -27,6 +27,7 @@ def refresh_tokens():
     # Возвращаем новые access и refresh
     return jwt_service.add_new_token_pair(current_user)
 
+
 @auth_route.post('/login')
 @auth_route.input(LoginInfo)
 def login_user(data):
