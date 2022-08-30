@@ -9,6 +9,9 @@ from src.services import user as user_service
 from src.services.crypto import verify_password_by_hash
 from src.services.jwt_service import jwt_service, auth, refresh_auth
 
+
+
+
 auth_route = APIBlueprint('auth', __name__, )
 
 logger = logging.getLogger()
@@ -25,7 +28,6 @@ def refresh_tokens():
 
     # Возвращаем новые access и refresh
     return jwt_service.add_new_token_pair(current_user)
-
 
 @auth_route.post('/login')
 @auth_route.input(LoginInfo)

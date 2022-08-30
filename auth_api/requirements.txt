@@ -21,3 +21,4 @@ opentelemetry-instrumentation-flask==0.29b1
 opentelemetry-exporter-jaeger==1.10.0
 opentelemetry-instrumentation-sqlalchemy==0.29b0
 user-agents==2.2.0
+Flask-Limiter==2.6.2
