@@ -14,6 +14,19 @@ users_roles = db.Table(
 )
 
 
+def create_partition(target, connection, **kw) -> None:
+    """Создает партицирования для таблицы AuthHistory"""
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth_history_smart" PARTITION OF "auth_history" FOR VALUES IN ('smart')"""
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth_history_mobile" PARTITION OF "auth_history" FOR VALUES IN ('mobile')"""
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth_history_web" PARTITION OF "auth_history" FOR VALUES IN ('web')"""
+    )
+
+
 class Role(db.Model):
     __tablename__ = 'roles'
 
@@ -38,14 +51,18 @@ class User(db.Model):
 
 
 class AuthHistory(db.Model):
-    __table_args__ = (UniqueConstraint('user_id', 'user_agent', name='_user_id_agent'),
-                      )
+    __tablename__ = 'auth_history'
+    __table_args__ = (UniqueConstraint('id', 'user_device_type'),
+        {
+            'postgresql_partition_by': 'LIST (user_device_type)',
+            'listeners': [('after_create', create_partition)],
+        })
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     user_agent = db.Column(db.String(255), nullable=False)
     updated_at = db.Column(DateTime(timezone=True), default=datetime.utcnow)
-
+    user_device_type = db.Column(db.Text, primary_key=True)
 
 class Token(BaseModel):
     """Модель токена"""
