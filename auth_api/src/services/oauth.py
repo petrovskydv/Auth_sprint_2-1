@@ -1,5 +1,7 @@
 from authlib.integrations.flask_client import OAuth
 
+from src.db.redis_db import redis_conn
+
 oauth = OAuth()
 
 oauth.register(
@@ -13,9 +15,14 @@ oauth.register(
     name='yandex',
     access_token_url='https://oauth.yandex.ru/token',
     authorize_url='https://oauth.yandex.ru/authorize',
-
+    api_base_url='https://login.yandex.ru/info',
+    client_kwargs={
+            "scope": "login:email login:info"
+        }
 )
 
 
 def init_oauth(app):
     oauth.init_app(app)
+    oauth.google.framework.cache = redis_conn
+    oauth.yandex.framework.cache = redis_conn
