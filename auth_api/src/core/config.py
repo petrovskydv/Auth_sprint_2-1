@@ -16,6 +16,8 @@ class ApiSettings(MainSettings):
     refresh_jwt_token_duration: int = Field(False, env='REFRESH_JWT_TOKEN_DURATION')
     access_jwt_token_duration: int = Field(False, env='ACCESS_JWT_TOKEN_DURATION')
     superuser_role_name: str = Field(False, env='SUPERUSER_ROLE_NAME')
+    # Limiter settings
+    limiter_config: str = Field(..., env='LIMITER_CONFIG')
 
 
 class RedisSettings(MainSettings):

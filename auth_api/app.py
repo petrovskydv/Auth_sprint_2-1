@@ -20,6 +20,7 @@ from src.services.oauth import init_oauth
 from src.services.role import create_role_in_db, get_role_by_name
 from src.services.user import create_user_in_db, add_role_to_user, get_user
 from src.core.tracers import configure_tracer
+from src.core.limiters import limiter
 
 
 def create_app(config_path):
@@ -30,9 +31,11 @@ def create_app(config_path):
     SQLAlchemyInstrumentor().instrument(engine=db.engine)
     jwt = JWTManager(app)
 
-    migrate = Migrate(app, db)
+    # from src.db.pg_db import db
+    # from src.models.models import User, Role
+    Migrate(app, db)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security = Security(app, user_datastore)
+    Security(app, user_datastore)
 
     @jwt.token_in_blocklist_loader
     def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
@@ -53,6 +56,8 @@ def create_app(config_path):
         user = get_user(id=identity)
         return user
 
+    limiter.init_app(app)
+
     api_v1 = '/auth/api/v1'
     app.register_blueprint(roles_route, url_prefix=f'{api_v1}/roles')
     app.register_blueprint(auth_route, url_prefix=f'{api_v1}/auth')
@@ -64,6 +69,7 @@ def create_app(config_path):
     return app
 
 
+# Подключаем конфиги
 app = create_app('src/core/config.py')
 
 
