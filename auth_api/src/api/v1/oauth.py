@@ -1,53 +1,28 @@
-import requests
-from apiflask import APIBlueprint, exceptions
+from apiflask import APIBlueprint
+from apiflask import fields as af_fields
+from flask import request
 
-from src.services.oauth import oauth
+from src.api.v1.schemas import Token
+from src.services import user as user_service, oauth as oauth_service
+from src.services.jwt_service import jwt_service
 
 oauth_route = APIBlueprint('oauth', __name__, )
 
 
-@oauth_route.get('/login/<string:name>')
-# @oauth_route.output(RoleOut(many=True))
-# @oauth_route.auth_required(auth)
-# @check_role_jwt('admin')
-def get_redirect_url(name):
-    # current_app
-    client = oauth.create_client(name)
-
-    if not client:
-        raise exceptions.HTTPError
-
-    # redirect_url = url_for('oauth.auth', name=name, _external=True)
-    redirect_url = f'https://0638-134-0-108-254.ngrok.io/auth/api/v1/oauth/auth/{name}/'
-
-    rv = client.create_authorization_url(redirect_url)
-    client.save_authorize_data(redirect_uri=redirect_url, **rv)
-    print(f'{rv=}')
-    return rv
+@oauth_route.get('/login/<string:social_name>/')
+@oauth_route.output({'url': af_fields.URL()})
+def get_redirect_url(social_name):
+    # redirect_url = url_for('oauth.auth', social_name=social_name, _external=True)
+    redirect_url = f'https://0638-134-0-108-254.ngrok.io/auth/api/v1/oauth/auth/{social_name}/'
+    url = oauth_service.get_social_redirect_url_or_404(redirect_url, social_name)
+    return {'url': url}
 
 
-@oauth_route.get('/auth/<string:name>/')
-# @oauth_route.output(RoleOut(many=True))
-# @oauth_route.auth_required(auth)
-# @check_role_jwt('admin')
-def auth(name):
-    client = oauth.create_client(name)
+@oauth_route.get('/auth/<string:social_name>/')
+@oauth_route.output(Token)
+def auth(social_name):
+    user = oauth_service.get_user_from_social(social_name)
 
-    if not client:
-        raise exceptions.HTTPError
-
-    token = client.authorize_access_token()
-
-    print(f'{token=}')
-    if name == 'yandex':
-        headers = {'Authorization': f'Bearer {client.token["access_token"]}'}
-        params = {
-            'format': 'json',
-        }
-        response = requests.get(client.api_base_url, headers=headers, params=params)
-        response.raise_for_status()
-        user = response.json()
-    else:
-        user = token.get("userinfo")
-    print(f'{user}')
-    return user
+    # Обновим историю посещений пользователя
+    user_service.update_history(user_agent=request.headers.get('User-Agent'), user_id=user.id)
+    return jwt_service.add_new_token_pair(user)

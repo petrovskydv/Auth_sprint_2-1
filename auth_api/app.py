@@ -1,26 +1,25 @@
 import click
 from apiflask import APIFlask
-from flask import request
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from src.api.v1.auth import auth_route
 from src.api.v1.oauth import oauth_route
 from src.api.v1.roles import roles_route
 from src.api.v1.users import users_route
 from src.core.config import api_settings
+from src.core.limiters import limiter
+from src.core.oauth import init_oauth
+from src.core.tracers import configure_tracer
 from src.db.pg_db import init_db, db
 from src.db.redis_db import redis_service
 from src.models.models import User, Role
-from src.services.oauth import init_oauth
 from src.services.role import create_role_in_db, get_role_by_name
 from src.services.user import create_user_in_db, add_role_to_user, get_user
-from src.core.tracers import configure_tracer
-from src.core.limiters import limiter
 
 
 def create_app(config_path):
@@ -31,8 +30,6 @@ def create_app(config_path):
     SQLAlchemyInstrumentor().instrument(engine=db.engine)
     jwt = JWTManager(app)
 
-    # from src.db.pg_db import db
-    # from src.models.models import User, Role
     Migrate(app, db)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     Security(app, user_datastore)
@@ -58,13 +55,13 @@ def create_app(config_path):
 
     limiter.init_app(app)
 
+    init_oauth(app)
+
     api_v1 = '/auth/api/v1'
     app.register_blueprint(roles_route, url_prefix=f'{api_v1}/roles')
     app.register_blueprint(auth_route, url_prefix=f'{api_v1}/auth')
     app.register_blueprint(users_route, url_prefix=f'{api_v1}/users')
     app.register_blueprint(oauth_route, url_prefix=f'{api_v1}/oauth')
-
-    init_oauth(app)
 
     return app
 
@@ -72,12 +69,11 @@ def create_app(config_path):
 # Подключаем конфиги
 app = create_app('src/core/config.py')
 
-
-@app.before_request
-def before_request():
-    request_id = request.headers.get('X-Request-Id')
-    if not request_id:
-        raise RuntimeError('request id is required')
+# @app.before_request
+# def before_request():
+#     request_id = request.headers.get('X-Request-Id')
+#     if not request_id:
+#         raise RuntimeError('request id is required')
 
 
 # Конфигурируем и добавляем трейсер

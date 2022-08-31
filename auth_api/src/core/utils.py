@@ -1,4 +1,7 @@
 import datetime as dt
+import secrets
+import string
+
 from user_agents import parse
 from enum import Enum
 
@@ -30,3 +33,9 @@ def get_unix_timedelta(unix_time: str | dt.datetime | int):
         end_timestamp = dt.datetime.fromtimestamp(float(unix_time)).timestamp()
 
     return end_timestamp - dt.datetime.now().timestamp()
+
+
+def get_random_password():
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for i in range(8))
+    return password
