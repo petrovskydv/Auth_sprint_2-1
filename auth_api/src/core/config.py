@@ -35,14 +35,22 @@ class PostgresSettings(MainSettings):
 
 class JaegerSettings(MainSettings):
     agent_host: str = Field(..., env='JAEGER_HOST')
-    agent_port: int = Field(..., env='JAEGER_AGENT_PORT')
+    agent_port: int = Field(..., env='JAEGER_PORT')
     sampling_ratio: float = Field(..., env='JAEGER_SAMPLING_RATIO')
+
+
+class OauthClientSettings(MainSettings):
+    google_client_id: str = Field(..., env='GOOGLE_CLIENT_ID')
+    google_client_secret: str = Field(..., env='GOOGLE_CLIENT_SECRET')
+    yandex_client_id: str = Field(..., env='YANDEX_CLIENT_ID')
+    yandex_client_secret: str = Field(..., env='YANDEX_CLIENT_SECRET')
 
 
 redis_settings = RedisSettings()
 pg_settings = PostgresSettings()
 api_settings = ApiSettings()
 jaeger_settings = JaegerSettings()
+oauth_settings = OauthClientSettings()
 
 # Flask Configuration
 SECRET_KEY = api_settings.secret_key
@@ -52,9 +60,15 @@ JWT_ACCESS_TOKEN_EXPIRES = api_settings.access_jwt_token_duration
 JWT_REFRESH_TOKEN_EXPIRES = api_settings.refresh_jwt_token_duration
 SUPERUSER_ROLE_NAME = api_settings.superuser_role_name
 SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}:{port}/{db}'.format(
-        user=pg_settings.postgres_user,
-        password=pg_settings.postgres_password,
-        host=pg_settings.postgres_host,
-        port=pg_settings.postgres_port,
-        db=pg_settings.postgres_db,
-    )
+    user=pg_settings.postgres_user,
+    password=pg_settings.postgres_password,
+    host=pg_settings.postgres_host,
+    port=pg_settings.postgres_port,
+    db=pg_settings.postgres_db,
+)
+
+GOOGLE_CLIENT_ID = oauth_settings.google_client_id
+GOOGLE_CLIENT_SECRET = oauth_settings.google_client_secret
+
+YANDEX_CLIENT_ID = oauth_settings.yandex_client_id
+YANDEX_CLIENT_SECRET = oauth_settings.yandex_client_secret
