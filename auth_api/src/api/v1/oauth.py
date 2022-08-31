@@ -1,6 +1,6 @@
 from apiflask import APIBlueprint
 from apiflask import fields as af_fields
-from flask import request
+from flask import request, url_for
 
 from src.api.v1.schemas import Token
 from src.services import user as user_service, oauth as oauth_service
@@ -12,8 +12,7 @@ oauth_route = APIBlueprint('oauth', __name__, )
 @oauth_route.get('/login/<string:social_name>/')
 @oauth_route.output({'url': af_fields.URL()})
 def get_redirect_url(social_name):
-    # redirect_url = url_for('oauth.auth', social_name=social_name, _external=True)
-    redirect_url = f'https://0638-134-0-108-254.ngrok.io/auth/api/v1/oauth/auth/{social_name}/'
+    redirect_url = url_for('oauth.auth', social_name=social_name, _external=True)
     url = oauth_service.get_social_redirect_url_or_404(redirect_url, social_name)
     return {'url': url}
 
