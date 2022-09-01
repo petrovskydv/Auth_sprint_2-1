@@ -1,29 +1,73 @@
+Ссылка на проект: https://github.com/AlexRussianPyth/Auth_sprint_2
 
+### Запуск проекта:
+1. Переходим в корень проекта (в нем находится файл docker-compose.yml)
+2. Создаем файл .env на основе .env_example (копируем и редактируем)
+3. Запускаем создание докер-образа:
+```
+docker-compose up --build  
+```
+или с помощью Makefile:
+```
+make compose
+```
+4. Проводим миграции БД. Для этого следует зайти в контейнер с API и запустить миграции через командную строку Flask:
+```
+docker exec -it auth_sprint_2_auth_api_1 bash
+python3 -m flask db upgrade
+```
+В Postgre базе создадутся все нужные миграции и партиции.
+5. ОПЦИОНАЛЬНО: Создаем суперпользователя. Нужно зайти в контейнер с Flask и запустить консольную команду (не забудьте указать свой емэйл и пароль)
+```
+docker exec -it auth_sprint_2_auth_api_1 bash
+python3 -m flask create-superuser your@email.com yourpassword123
+```
 
-# Лимитер
-В проекте используется обычный bucket-limiter, который настраивается через env файл. 
+###  Особенности проекта
+- В проекте используется обычный bucket-limiter, который настраивается через _.env_ файл.
+- Трейсинг запросов осуществляет с помощью Jaeger. Он доступен по адресу 
+```
+http://localhost:16686/
+```
 
+### Структура базы данных
+После проведения миграций в базе данных Postgres появятся таблицы:
+ _- alembic_version - хранит идентификатор миграции базы данных
+ - auth_history - пустая таблица. В ней хранится история входов пользователя.
+ - auth_history_<device> - таблицы-партиции для таблицы auth_history
+ - roles - таблица для добавленных ролей
+ - users - таблица для добавленных юзеров
+ - users_roles - связка uuid user_id и role_id_
 
+# Список endpoints
+Для тестирования ручек через [OpenAPI] необходимо перейти по адресу: 
+```
+http://localhost:8000/
+```
 
-
-
-# Проектная работа 7 спринта
-
-Упростите регистрацию и аутентификацию пользователей в Auth-сервисе, добавив вход через социальные сервисы. Список сервисов выбирайте исходя из целевой аудитории онлайн-кинотеатра — подумайте, какими социальными сервисами они пользуются. Например, использовать [OAuth от Github](https://docs.github.com/en/free-pro-team@latest/developers/apps/authorizing-oauth-apps){target="_blank"} — не самая удачная идея. Ваши пользователи не разработчики и вряд ли имеют аккаунт на Github. А вот добавить Twitter, Facebook, VK, Google, Yandex или Mail будет хорошей идеей.
-
-Вам не нужно делать фронтенд в этой задаче и реализовывать собственный сервер OAuth. Нужно реализовать протокол со стороны потребителя.
-
-Информация по OAuth у разных поставщиков данных: 
-
-- [Twitter](https://developer.twitter.com/en/docs/authentication/overview){target="_blank"},
-- [Facebook](https://developers.facebook.com/docs/facebook-login/){target="_blank"},
-- [VK](https://vk.com/dev/access_token){target="_blank"},
-- [Google](https://developers.google.com/identity/protocols/oauth2){target="_blank"},
-- [Yandex](https://yandex.ru/dev/oauth/?turbo=true){target="_blank"},
-- [Mail](https://api.mail.ru/docs/guides/oauth/){target="_blank"}.
-
-## Дополнительное задание
-
-Реализуйте возможность открепить аккаунт в соцсети от личного кабинета. 
-
-Решение залейте в репозиторий текущего спринта и отправьте на ревью.
+Представленные enpoints:
+* Управление ролями:
+ - Получение списка ролей: **GET /auth/api/v1/roles/**
+ - Создание роли: **POST /auth/api/v1/roles/**
+ - Удаление роли: **DELETE /auth/api/v1/roles/{role_id}**
+ - Получение роли по идентификатору: **GET /auth/api/v1/roles/{role_id}**
+ - Изменение роли по ее идентификатору: **PATCH /auth/api/v1/roles/{role_id}** 
+* Управление авторизацией: 
+ - Авторизация пользователя: **POST /auth/api/v1/auth/login**
+ - Выход пользователя (помещает переданный токен в блоклист): **DELETE /auth/api/v1/auth/logout**
+ - Для валидного refresh-токена возвращает пару токенов access+refresh: **POST /auth/api/v1/auth/refresh**  
+* Управление пользователями:
+ - Обновление логина и пароля пользователя: **PATCH /auth/api/v1/users/**
+ - История авторизаций пользователя: **GET /auth/api/v1/users/auth_history**
+ - Создание пользователя: **POST /auth/api/v1/users/register**
+ - Удаление роли у пользователя: **DELETE /auth/api/v1/users/{user_id}/roles**
+ - Получение списка ролей одного пользователя **GET /auth/api/v1/users/{user_id}/roles**
+ - Добавление роли пользователя **POST /auth/api/v1/users/{user_id}/roles**
+ 
+# Тестирование endpoints 
+Тесты доступны для docker-compose.dev.yml. Запустить тесты можно следующими командами:
+```
+make dev-compose
+docker exec -it auth_sprint_2_auth_api_1 bash
+PYTHONPATH=. pytest
+```

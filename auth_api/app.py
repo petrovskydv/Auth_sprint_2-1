@@ -6,6 +6,7 @@ from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from flask import request
 
 from src.api.v1.auth import auth_route
 from src.api.v1.oauth import oauth_route
@@ -23,7 +24,7 @@ from src.services.user import create_user_in_db, add_role_to_user, get_user
 
 
 def create_app(config_path):
-    app = APIFlask(__name__, docs_path='/')
+    app = APIFlask(__name__, docs_path='/', title='Authorization Service API', version='1.0')
     app.config.from_pyfile(config_path)
 
     init_db(app)
@@ -57,6 +58,7 @@ def create_app(config_path):
 
     init_oauth(app)
 
+    # Регистрируем эндпоинты
     api_v1 = '/auth/api/v1'
     app.register_blueprint(roles_route, url_prefix=f'{api_v1}/roles')
     app.register_blueprint(auth_route, url_prefix=f'{api_v1}/auth')
@@ -66,14 +68,15 @@ def create_app(config_path):
     return app
 
 
-# Подключаем конфиги
+# Создаем приложение и подключаем конфиги
 app = create_app('src/core/config.py')
 
-# @app.before_request
-# def before_request():
-#     request_id = request.headers.get('X-Request-Id')
-#     if not request_id:
-#         raise RuntimeError('request id is required')
+
+@app.before_request
+def before_request():
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        raise RuntimeError('request id is required')
 
 
 # Конфигурируем и добавляем трейсер

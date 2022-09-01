@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from apiflask import Schema, fields as af_fields, PaginationSchema
-from apiflask.validators import Length, Email, Range, OneOf
+from apiflask.validators import Length, Email, Range
 from marshmallow import fields as mm_fields
 from pydantic import BaseModel
 

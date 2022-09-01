@@ -5,7 +5,11 @@ from src.api.v1.schemas import RoleOut, UUIDSchema, RoleIn
 from src.services import role as role_service
 from src.services.jwt_service import check_role_jwt, auth
 
-roles_route = APIBlueprint('roles', __name__, )
+roles_route = APIBlueprint(
+    name='roles',
+    import_name=__name__,
+    tag={"name": "Roles", "description": "CRUD для системы ролей"}
+)
 
 
 def validate_uuid(role_id):
