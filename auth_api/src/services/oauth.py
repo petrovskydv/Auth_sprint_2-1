@@ -32,7 +32,7 @@ def get_social_redirect_url_or_404(redirect_url, social_name):
 def get_social_client_or_404(social_name):
     client = oauth.create_client(social_name)
     if not client:
-        abort(404, message="Социальная сеть с таким имененм не найдена")
+        abort(404, message="Социальная сеть с таким именем не найдена")
     return client
 
 

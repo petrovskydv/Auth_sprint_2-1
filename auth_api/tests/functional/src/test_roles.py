@@ -43,6 +43,3 @@ def test_add_role_by_admin(session_client, create_admin_with_role):
     response = session_client.get(f'/auth/api/v1/roles/{role_out.id}', headers=headers)
     assert response.status_code == 200
     assert RoleOut(**response.json)
-
-
-

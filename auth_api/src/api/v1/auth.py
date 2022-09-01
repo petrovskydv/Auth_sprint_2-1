@@ -10,7 +10,11 @@ from src.services.crypto import verify_password_by_hash
 from src.services.jwt_service import jwt_service, auth, refresh_auth
 
 
-auth_route = APIBlueprint('auth', __name__, )
+auth_route = APIBlueprint(
+    name='auth',
+    import_name=__name__,
+    tag={"name": "Auth", "description": "Базовая аутентификация и работа с JWT"}
+)
 
 logger = logging.getLogger()
 

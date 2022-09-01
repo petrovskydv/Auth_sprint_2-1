@@ -6,7 +6,12 @@ from src.api.v1.schemas import UserIn, UserOut, AuthHistoryOut, RoleName, RoleOu
 from src.services import user as user_service, role as role_service
 from src.services.jwt_service import check_role_jwt, auth
 
-users_route = APIBlueprint('users', __name__, )
+
+users_route = APIBlueprint(
+    name='users',
+    import_name=__name__,
+    tag={"name": "Users", "description": "CRUD для Пользователей"}
+)
 
 
 @users_route.post('/register')

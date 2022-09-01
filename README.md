@@ -65,7 +65,9 @@ http://localhost:8000/
  - Добавление роли пользователя **POST /auth/api/v1/users/{user_id}/roles**
  
 # Тестирование endpoints 
-Запустить тесты можно командой 
+Тесты доступны для docker-compose.dev.yml. Запустить тесты можно следующими командами:
 ```
+make dev-compose
+docker exec -it auth_sprint_2_auth_api_1 bash
 PYTHONPATH=. pytest
 ```

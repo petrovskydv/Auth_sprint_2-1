@@ -35,7 +35,7 @@ class PostgresSettings(MainSettings):
 
 class JaegerSettings(MainSettings):
     agent_host: str = Field(..., env='JAEGER_HOST')
-    agent_port: int = Field(..., env='JAEGER_PORT')
+    agent_port: int = Field(..., env='JAEGER_AGENT_PORT')
     sampling_ratio: float = Field(..., env='JAEGER_SAMPLING_RATIO')
 
 
