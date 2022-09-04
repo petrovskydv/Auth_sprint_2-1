@@ -26,11 +26,7 @@ def get_redirect_url(social_name):
 @oauth_route.get('/auth/<string:social_name>/')
 @oauth_route.output(Token, description='Пара токенов (Access+Refresh) для сервиса авторизации')
 def auth(social_name):
-    """Аутентификация с помощью стороннего сервиса
-
-    HEADERS:
-    Auth: Zhopa
-    """
+    """Аутентификация с помощью стороннего сервиса"""
     user = oauth_service.get_user_from_social(social_name)
 
     # Обновим историю посещений пользователя
