@@ -37,6 +37,7 @@ class JaegerSettings(MainSettings):
     agent_host: str = Field(..., env='JAEGER_HOST')
     agent_port: int = Field(..., env='JAEGER_AGENT_PORT')
     sampling_ratio: float = Field(..., env='JAEGER_SAMPLING_RATIO')
+    auth_project_name: str = Field(..., env='AUTH_PROJECT_NAME')
 
 
 class OauthClientSettings(MainSettings):
