@@ -43,8 +43,16 @@ class JaegerSettings(MainSettings):
 class OauthClientSettings(MainSettings):
     google_client_id: str = Field(..., env='GOOGLE_CLIENT_ID')
     google_client_secret: str = Field(..., env='GOOGLE_CLIENT_SECRET')
+    google_server_metadata_url: str = Field(
+        'https://accounts.google.com/.well-known/openid-configuration',
+        env='GOOGLE_SERVER_METADATA_URL'
+    )
+
     yandex_client_id: str = Field(..., env='YANDEX_CLIENT_ID')
     yandex_client_secret: str = Field(..., env='YANDEX_CLIENT_SECRET')
+    yandex_access_token_url: str = Field('https://oauth.yandex.ru/token', env='YANDEX_ACCESS_TOKEN_URL')
+    yandex_authorize_url: str = Field('https://oauth.yandex.ru/authorize', env='YANDEX_AUTHORIZE_URL')
+    yandex_api_base_url: str = Field('https://login.yandex.ru/info', env='YANDEX_API_BASE_URL')
 
 
 redis_settings = RedisSettings()
