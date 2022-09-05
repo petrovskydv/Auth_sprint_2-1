@@ -1,28 +1,35 @@
+import enum
+
 from authlib.integrations.flask_client import OAuth
 
+from src.core.config import oauth_settings
 from src.db.redis_db import redis_conn
 
 oauth = OAuth()
 
+
+class OAuthProvider(enum.Enum):
+    yandex = 'yandex'
+    google = 'google'
+
+
 oauth.register(
-    name="google",
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    name=OAuthProvider.google.name,
+    server_metadata_url=oauth_settings.google_server_metadata_url,
     client_kwargs={
-        "scope": "openid email profile"
+        'scope': 'openid email profile'
     }
 )
 oauth.register(
-    name='yandex',
-    access_token_url='https://oauth.yandex.ru/token',
-    authorize_url='https://oauth.yandex.ru/authorize',
-    api_base_url='https://login.yandex.ru/info',
+    name=OAuthProvider.yandex.name,
+    access_token_url=oauth_settings.yandex_access_token_url,
+    authorize_url=oauth_settings.yandex_authorize_url,
+    api_base_url=oauth_settings.yandex_api_base_url,
     client_kwargs={
-        "scope": "login:email login:info"
+        'scope': 'login:email login:info'
     }
 )
 
 
 def init_oauth(app):
-    oauth.init_app(app)
-    oauth.google.framework.cache = redis_conn
-    oauth.yandex.framework.cache = redis_conn
+    oauth.init_app(app, cache=redis_conn)

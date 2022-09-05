@@ -2,7 +2,7 @@ import requests
 from apiflask import abort
 from flask_security.utils import hash_password
 
-from src.core.oauth import oauth
+from src.core.oauth import oauth, OAuthProvider
 from src.core.utils import get_random_password
 from src.db.pg_db import db
 from src.models.models import SocialAccount, SocialUser
@@ -42,9 +42,9 @@ def get_user_from_social(social_name):
 
     social_user = None
 
-    if social_name == 'yandex':
+    if social_name == OAuthProvider.yandex.name:
         social_user = get_user_from_yandex(client.api_base_url, token['access_token'])
-    elif social_name == 'google':
+    elif social_name == OAuthProvider.google.name:
         social_user = get_user_from_google(token)
 
     social_account = get_user_social_account(social_id=social_user.id, social_name=social_name)
