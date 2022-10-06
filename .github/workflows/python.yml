@@ -25,4 +25,4 @@ jobs:
         pip install -r auth_api/requirements.txt
 
     - name: wemake-python-styleguide
-      uses: wemake-services/wemake-python-styleguide@v0.17.0
+      uses: wemake-services/wemake-python-styleguide@0.17.0
