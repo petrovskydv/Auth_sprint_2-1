@@ -47,10 +47,23 @@ jobs:
           name: reports
           path: reports/
 
-      - name: notification
-        if: cancelled() == false
-        uses: xinthink/action-telegram@v1.1
+#      - name: notification
+#        if: cancelled() == false
+#        uses: xinthink/action-telegram@v1.1
+#        with:
+#          botToken: ${{ secrets.BotToken }}
+#          chatId: ${{ secrets.ChatID }}
+#          jobStatus: ${{ job.status }}
+
+      - name: send telegram message on push
+        uses: appleboy/telegram-action@master
         with:
-          botToken: ${{ secrets.BotToken }}
-          chatId: ${{ secrets.ChatID }}
-          jobStatus: ${{ job.status }}
+          to: ${{ secrets.ChatID }}
+          token: ${{ secrets.BotToken }}
+          message: |
+            ${{ github.actor }} created commit:
+            Commit message: ${{ github.event.commits[0].message }}
+            
+            Repository: ${{ github.repository }}
+            
+            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
