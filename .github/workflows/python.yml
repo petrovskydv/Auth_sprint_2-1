@@ -67,4 +67,7 @@ jobs:
             
             Repository: ${{ github.repository }}
             
+            GITHUB_ACTION: ${{ github.action }}
+            python version: ${{ matrix.python-version }}
+            
             See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
