@@ -72,5 +72,6 @@ jobs:
 
             python version: ${{ matrix.python-version }}
             workflow: ${{ github.workflow }}
+            jobStatus: ${{ job.status }}
             
             See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
